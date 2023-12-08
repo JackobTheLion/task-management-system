@@ -1,0 +1,26 @@
+version: '3.1'
+
+services:
+
+  tsm-service:
+    build:
+      dockerfile: Dockerfile
+    container_name: task-management-system
+    ports:
+      - "8080:8080"
+    depends_on:
+      - tsm-db
+    environment:
+      - SPRING_DATASOURCE_URL=
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
+  tsm-db:
+    image: postgres:14.3-alpine
+    container_name: bb-db-container
+    ports:
+      - "6542:5432"
+    environment:
+      - POSTGRES_DB=tsm
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
