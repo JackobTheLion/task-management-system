@@ -56,17 +56,13 @@ public class CustomUserRepository {
             predicates.add(lastName);
         }
 
-        if (userSearchCriteria.getUserRole() != null && !userSearchCriteria.getUserRole().isEmpty()) {
-            Predicate userRole = root.get("userRole").in(userSearchCriteria.getUserRole());
-            predicates.add(userRole);
-        }
-
         if (userSearchCriteria.getActive() != null) {
             Predicate active = builder.equal(root.get("active"), userSearchCriteria.getActive());
             predicates.add(active);
         }
 
-        CriteriaQuery<User> select = criteriaQuery.select(root).where(predicates.toArray(new Predicate[0]));
+        CriteriaQuery<User> select = criteriaQuery.select(root).where(predicates.toArray(new Predicate[0]))
+                .orderBy(builder.asc(root.get("id")));
         TypedQuery<User> typedQuery = entityManager.createQuery(select);
         typedQuery.setFirstResult(userSearchCriteria.getFrom());
         typedQuery.setMaxResults(userSearchCriteria.getSize());

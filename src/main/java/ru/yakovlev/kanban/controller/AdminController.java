@@ -13,11 +13,10 @@ import ru.yakovlev.kanban.dto.task.TaskDtoRequest;
 import ru.yakovlev.kanban.dto.task.TaskDtoShortResponse;
 import ru.yakovlev.kanban.dto.task.TaskSearchCriteria;
 import ru.yakovlev.kanban.dto.user.UserDtoFullResponse;
-import ru.yakovlev.kanban.dto.user.UserDtoRequest;
+import ru.yakovlev.kanban.dto.user.UserDtoRequestAdmin;
 import ru.yakovlev.kanban.dto.user.UserSearchCriteria;
 import ru.yakovlev.kanban.model.task.Priority;
 import ru.yakovlev.kanban.model.task.Status;
-import ru.yakovlev.kanban.model.user.UserRole;
 import ru.yakovlev.kanban.service.TaskService;
 import ru.yakovlev.kanban.service.UserService;
 
@@ -42,18 +41,18 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     public List<UserDtoFullResponse> findUsers(@RequestParam(required = false) Long id,
                                                @RequestParam(required = false) String email,
+                                               @RequestParam(required = false) String userName,
                                                @RequestParam(required = false) String firstName,
                                                @RequestParam(required = false) String lastName,
-                                               @RequestParam(required = false) List<UserRole> userRole,
                                                @RequestParam(defaultValue = "0") Integer from,
                                                @RequestParam(defaultValue = "10") Integer size) {
 
         UserSearchCriteria userSearchCriteria = UserSearchCriteria.builder()
                 .id(id)
                 .email(email)
+                .userName(userName)
                 .firstName(firstName)
                 .lastName(lastName)
-                .userRole(userRole)
                 .from(from)
                 .size(size).build();
 
@@ -103,7 +102,7 @@ public class AdminController {
     @Operation(summary = "Updating user information",
             description = "Updating user information by administrator")
     @ResponseStatus(HttpStatus.OK)
-    public UserDtoFullResponse adminUpdateUser(@RequestBody UserDtoRequest userDtoRequest) {
-        return userService.updateUserByAdmin(userDtoRequest);
+    public UserDtoFullResponse adminUpdateUser(@RequestBody UserDtoRequestAdmin userDtoRequestAdmin) {
+        return userService.updateUserByAdmin(userDtoRequestAdmin);
     }
 }

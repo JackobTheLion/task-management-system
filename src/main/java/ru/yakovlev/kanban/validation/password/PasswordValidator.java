@@ -1,4 +1,4 @@
-package ru.yakovlev.kanban.validation;
+package ru.yakovlev.kanban.validation.password;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -17,5 +17,10 @@ public class PasswordValidator implements ConstraintValidator<Password, String> 
     public boolean isValid(String value, ConstraintValidatorContext context) {
         return value.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$") &&
                 !value.isEmpty();
+    }
+
+    @Override
+    public void initialize(Password constraintAnnotation) {
+        ConstraintValidator.super.initialize(constraintAnnotation);
     }
 }

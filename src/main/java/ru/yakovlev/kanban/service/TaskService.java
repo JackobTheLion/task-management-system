@@ -48,6 +48,8 @@ public interface TaskService {
      */
     List<TaskDtoShortResponse> findTasks(TaskSearchCriteria taskSearchCriteria);
 
+    TaskDtoFullResponse findTaskById(Long id);
+
     /**
      * Status update for task.
      *

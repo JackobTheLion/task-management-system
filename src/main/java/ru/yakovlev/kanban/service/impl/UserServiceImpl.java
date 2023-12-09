@@ -9,11 +9,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yakovlev.kanban.dto.user.UserDtoFullResponse;
-import ru.yakovlev.kanban.dto.user.UserDtoRequest;
+import ru.yakovlev.kanban.dto.user.UserDtoRequestAdmin;
+import ru.yakovlev.kanban.dto.user.UserDtoRequestUser;
 import ru.yakovlev.kanban.dto.user.UserSearchCriteria;
 import ru.yakovlev.kanban.exception.exceptions.AccessDeniedException;
 import ru.yakovlev.kanban.exception.exceptions.EmailOrNameRegisteredException;
-import ru.yakovlev.kanban.exception.exceptions.NotFoundException;
 import ru.yakovlev.kanban.mapper.UserMapper;
 import ru.yakovlev.kanban.model.user.User;
 import ru.yakovlev.kanban.model.user.UserRole;
@@ -50,24 +50,17 @@ public class UserServiceImpl implements UserService {
     /**
      * Adding new user.
      *
-     * @param userDtoRequest new user to add
+     * @param userDtoRequestUser new user to add
      * @return {@link UserDtoFullResponse} saved user
      */
     @Override
     @Transactional
-    public UserDtoFullResponse addUser(UserDtoRequest userDtoRequest) {
-        log.trace("Saving user: {}.", userDtoRequest);
-        List<UserRole> userRoles = userRoleRepository.findUserRoleByNameIn(userDtoRequest.getUserRole());
+    public UserDtoFullResponse addUser(UserDtoRequestUser userDtoRequestUser) {
+        log.trace("Saving user: {}.", userDtoRequestUser);
 
-        if (userRoles.isEmpty()) {
-            log.warn("User roles not found: {}", userDtoRequest.getUserRole());
-            throw new NotFoundException(String.format("User roles not found: %s", userDtoRequest.getUserRole()));
-        }
-
-        log.trace("User roles found: {}", userRoles);
-        User userToSave = UserMapper.mapFromDto(userDtoRequest, userRoles,
-                passwordEncoder.encode(userDtoRequest.getPassword()));
-
+        User userToSave = UserMapper.mapFromDto(userDtoRequestUser, passwordEncoder.encode(userDtoRequestUser.getPassword()));
+        UserRole userRole = userRoleRepository.findUserRoleByName("ROLE_USER");
+        userToSave.setUserRole(List.of(userRole));
         userToSave.setEnabled(false);
 
         User savedUser = saveUserToDb(userToSave);
@@ -79,23 +72,16 @@ public class UserServiceImpl implements UserService {
     /**
      * Updating existing user. Non admin user can update only his own information.
      *
-     * @param userDtoRequest user information to update
-     * @param principal      current user
+     * @param userDtoRequestUser user information to update
+     * @param principal          current user
      * @return {@link UserDtoFullResponse} saved user
      */
     @Override
     @Transactional
-    public UserDtoFullResponse updateUser(UserDtoRequest userDtoRequest, Principal principal) {
-        log.trace("Updating user: {}.", userDtoRequest);
-
-        if (!principal.getName().equals(userDtoRequest.getUserName())) {
-            log.error("User '{}' cannot update user '{}'.", principal.getName(), userDtoRequest.getUserName());
-            throw new AccessDeniedException(String.format("User '%s' cannot update user '%s'.",
-                    principal.getName(), userDtoRequest.getUserName()));
-        }
-
-        User userToUpdate = findUserByName(userDtoRequest.getUserName());
-        updateUserFields(userToUpdate, userDtoRequest);
+    public UserDtoFullResponse updateUser(UserDtoRequestUser userDtoRequestUser, Principal principal) {
+        log.trace("Updating user: {}.", userDtoRequestUser);
+        User userToUpdate = findUserByName(principal.getName());
+        updateUserFields(userToUpdate, userDtoRequestUser);
         User updateduser = saveUserToDb(userToUpdate);
         log.trace("User updated: {}.", updateduser);
         return UserMapper.mapToFullDto(updateduser);
@@ -104,19 +90,23 @@ public class UserServiceImpl implements UserService {
     /**
      * User update by admin.
      *
-     * @param userDtoRequest user information to update
+     * @param userDtoRequestUser user information to update
      * @return {@link UserDtoFullResponse} saved user
      */
     @Override
     @Transactional
-    public UserDtoFullResponse updateUserByAdmin(UserDtoRequest userDtoRequest) {
-        log.trace("Updating user: {}.", userDtoRequest);
-        User userToUpdate = findUserByName(userDtoRequest.getUserName());
-        updateUserFields(userToUpdate, userDtoRequest);
+    public UserDtoFullResponse updateUserByAdmin(UserDtoRequestAdmin userDtoRequestUser) {
+        log.trace("Updating user: {}.", userDtoRequestUser);
+        User userToUpdate = findUserByName(userDtoRequestUser.getUserName());
+        updateUserFields(userToUpdate, userDtoRequestUser);
 
-        if (userDtoRequest.getUserRole().isEmpty()) {
-            List<UserRole> userRoles = userRoleRepository.findUserRoleByNameIn(userDtoRequest.getUserRole());
+        if (userDtoRequestUser.getUserRole().isEmpty()) {
+            List<UserRole> userRoles = userRoleRepository.findUserRoleByNameIn(userDtoRequestUser.getUserRole());
             userToUpdate.setUserRole(userRoles);
+        }
+
+        if (userDtoRequestUser.getEnabled() != null) {
+            userToUpdate.setEnabled(userDtoRequestUser.getEnabled());
         }
 
         User updateduser = userRepository.save(userToUpdate);
@@ -165,25 +155,25 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
-    private void updateUserFields(User userToUpdate, UserDtoRequest userDtoRequest) {
-        if (userDtoRequest.getEmail() != null) {
-            userToUpdate.setEmail(userDtoRequest.getEmail());
+    private void updateUserFields(User userToUpdate, UserDtoRequestUser userDtoRequestUser) {
+        if (userDtoRequestUser.getEmail() != null) {
+            userToUpdate.setEmail(userDtoRequestUser.getEmail());
         }
 
-        if (userDtoRequest.getUserName() != null) {
-            userToUpdate.setUserName(userDtoRequest.getUserName());
+        if (userDtoRequestUser.getUserName() != null) {
+            userToUpdate.setUserName(userDtoRequestUser.getUserName());
         }
 
-        if (userDtoRequest.getFirstName() != null) {
-            userToUpdate.setFirstName(userDtoRequest.getFirstName());
+        if (userDtoRequestUser.getFirstName() != null) {
+            userToUpdate.setFirstName(userDtoRequestUser.getFirstName());
         }
 
-        if (userDtoRequest.getLastName() != null) {
-            userToUpdate.setLastName(userDtoRequest.getLastName());
+        if (userDtoRequestUser.getLastName() != null) {
+            userToUpdate.setLastName(userDtoRequestUser.getLastName());
         }
 
-        if (userDtoRequest.getPassword() != null) {
-            userToUpdate.setPassword(passwordEncoder.encode(userDtoRequest.getPassword()));
+        if (userDtoRequestUser.getPassword() != null) {
+            userToUpdate.setPassword(passwordEncoder.encode(userDtoRequestUser.getPassword()));
         }
     }
 

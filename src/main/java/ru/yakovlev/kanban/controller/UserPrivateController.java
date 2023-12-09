@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yakovlev.kanban.dto.user.UserDtoFullResponse;
-import ru.yakovlev.kanban.dto.user.UserDtoRequest;
+import ru.yakovlev.kanban.dto.user.UserDtoRequestUser;
 import ru.yakovlev.kanban.service.UserService;
 import ru.yakovlev.kanban.validation.ValidationGroups;
 
@@ -27,8 +27,8 @@ public class UserPrivateController {
             description = "User update personal information. Only user's own information can be updated.")
     @PatchMapping
     @ResponseStatus(HttpStatus.OK)
-    public UserDtoFullResponse updateUser(@RequestBody @Validated(ValidationGroups.Update.class) UserDtoRequest userDtoRequest,
+    public UserDtoFullResponse updateUser(@RequestBody @Validated(ValidationGroups.Update.class) UserDtoRequestUser userDtoRequestUser,
                                           Principal principal) {
-        return userService.updateUser(userDtoRequest, principal);
+        return userService.updateUser(userDtoRequestUser, principal);
     }
 }

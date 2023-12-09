@@ -4,43 +4,37 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.yakovlev.kanban.validation.Password;
-import ru.yakovlev.kanban.validation.ValidationGroups;
+import ru.yakovlev.kanban.validation.password.Password;
 
-import java.util.List;
+import static ru.yakovlev.kanban.validation.ValidationGroups.Create;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Schema(description = "Create and update user request")
-public class UserDtoRequest {
+public class UserDtoRequestUser {
 
-    @Email(groups = ValidationGroups.Create.class)
+    @Email(groups = Create.class)
     @NotBlank
     private String email;
 
-    @NotEmpty(groups = ValidationGroups.Create.class)
+    @NotEmpty(groups = Create.class)
     private String userName;
 
-    @NotEmpty(groups = ValidationGroups.Create.class)
+    @NotEmpty(groups = Create.class)
     private String firstName;
 
-    @NotEmpty(groups = ValidationGroups.Create.class)
+    @NotEmpty(groups = Create.class)
     private String lastName;
 
-    @NotEmpty
+    @NotEmpty(groups = Create.class)
     @Password
     private String password;
-
-    @Schema(description = "'ROLE_ADMIN', 'ROLE_USER'")
-    @NotNull(groups = ValidationGroups.Create.class)
-    private List<String> userRole;
 
     @Override
     public String toString() {
@@ -49,7 +43,6 @@ public class UserDtoRequest {
                 ", userName='" + userName + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", userRole=" + userRole +
                 '}';
     }
 }

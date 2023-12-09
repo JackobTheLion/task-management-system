@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yakovlev.kanban.dto.jwt.JwtRequest;
 import ru.yakovlev.kanban.dto.jwt.JwtResponse;
 import ru.yakovlev.kanban.dto.user.UserDtoFullResponse;
-import ru.yakovlev.kanban.dto.user.UserDtoRequest;
+import ru.yakovlev.kanban.dto.user.UserDtoRequestUser;
 import ru.yakovlev.kanban.service.UserService;
 import ru.yakovlev.kanban.service.impl.AuthenticationServiceImpl;
 import ru.yakovlev.kanban.validation.ValidationGroups;
@@ -31,8 +31,10 @@ public class UserPublicController {
             description = "Created user will have enabled status 'false' and have to be approved by administrator.")
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDtoFullResponse adduser(@RequestBody @Validated(ValidationGroups.Create.class) UserDtoRequest userDtoRequest) {
-        return userService.addUser(userDtoRequest);
+    public UserDtoFullResponse adduser(@RequestBody
+                                       @Validated(ValidationGroups.Create.class)
+                                       UserDtoRequestUser userDtoRequestUser) {
+        return userService.addUser(userDtoRequestUser);
     }
 
     @Operation(summary = "User receiving JWT token")

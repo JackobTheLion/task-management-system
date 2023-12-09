@@ -8,6 +8,8 @@ import ru.yakovlev.kanban.dto.user.UserDtoShortResponse;
 import ru.yakovlev.kanban.model.task.Priority;
 import ru.yakovlev.kanban.model.task.Status;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,6 +24,8 @@ public class TaskDtoFullResponse {
     private Status status;
 
     private Priority priority;
+
+    private List<CommentDtoResponse> comments;
 
     private UserDtoShortResponse author;
 

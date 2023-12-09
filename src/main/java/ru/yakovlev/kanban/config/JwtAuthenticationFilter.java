@@ -1,12 +1,16 @@
 package ru.yakovlev.kanban.config;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -15,7 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.yakovlev.kanban.exception.exceptions.AccessDeniedException;
+import ru.yakovlev.kanban.exception.ErrorResponse;
 import ru.yakovlev.kanban.service.JwtService;
 import ru.yakovlev.kanban.service.UserService;
 
@@ -32,33 +36,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userName;
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        jwt = authHeader.substring(7);
         try {
-            userName = jwtService.extractUserName(jwt);
-        } catch (SignatureException e) {
-            throw new AccessDeniedException("Token is invalid.");
-        }
+            final String authHeader = request.getHeader("Authorization");
+            final String jwt;
+            final String userName;
 
-        if (!userName.isEmpty()
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userService.findUserByName(userName);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                SecurityContext context = SecurityContextHolder.createEmptyContext();
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                context.setAuthentication(authToken);
-                SecurityContextHolder.setContext(context);
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
             }
+            jwt = authHeader.substring(7);
+            userName = jwtService.extractUserName(jwt);
+
+
+            if (!userName.isEmpty()
+                    && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userService.findUserByName(userName);
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    SecurityContext context = SecurityContextHolder.createEmptyContext();
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    context.setAuthentication(authToken);
+                    SecurityContextHolder.setContext(context);
+                }
+            }
+            filterChain.doFilter(request, response);
+        } catch (SignatureException | ExpiredJwtException e) {
+            ObjectMapper mapper = new ObjectMapper();
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.getWriter().write(mapper.writeValueAsString(
+                    new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage())));
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         }
-        filterChain.doFilter(request, response);
     }
 }

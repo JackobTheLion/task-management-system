@@ -50,11 +50,12 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public TaskDtoFullResponse addTask(TaskDtoRequest taskDtoRequest, Principal principal) {
         log.trace("Adding new task: {}", taskDtoRequest);
-        User executor = userService.findUserById(taskDtoRequest.getExecutor());
-
         Task task = TaskMapper.mapFromDto(taskDtoRequest);
         task.setAuthor(userService.findUserByName(principal.getName()));
-        task.setExecutor(executor);
+
+        if (taskDtoRequest.getExecutor() != null) {
+            task.setExecutor(userService.findUserById(taskDtoRequest.getExecutor()));
+        }
 
         Task savedtask = taskRepository.save(task);
         log.trace("Task saved: {}.", savedtask);
@@ -139,6 +140,12 @@ public class TaskServiceImpl implements TaskService {
         List<Task> tasks = customTaskRepository.findTasks(taskSearchCriteria);
         log.trace("Number of tasks found: {}", tasks.size());
         return tasks.stream().map(TaskMapper::mapToShortDto).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TaskDtoFullResponse findTaskById(Long id) {
+        return TaskMapper.mapToFullDto(findTask(id));
     }
 
     /**
