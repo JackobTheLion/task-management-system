@@ -11,9 +11,13 @@ services:
     depends_on:
       - tsm-db
     environment:
-      - SPRING_DATASOURCE_URL=
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://tsm-db:5432/tsm
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
+      - ADMIN_LOGIN=admin
+      - ADMIN_PASSWORD=admin
+      - TOKEN_SECRET=51Ph61VOzrdwNvRa9FZclUpZRU160G1O
+      - TOKEN_DURATION=10m
 
   tsm-db:
     image: postgres:14.3-alpine
