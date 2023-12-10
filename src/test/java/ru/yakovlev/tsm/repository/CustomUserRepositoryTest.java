@@ -30,9 +30,7 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Testcontainers
 class CustomUserRepositoryTest {
-
     private final UserRepository userRepository;
-
     private final CustomUserRepository customUserRepository;
 
     @Container

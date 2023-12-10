@@ -14,6 +14,11 @@ import ru.yakovlev.tsm.repository.UserRoleRepository;
 
 import java.util.List;
 
+/**
+ * Class is to create default administrator account.
+ * Login and password can be set at deployment stage by indicating respective environmental variable.
+ */
+
 @Component
 @RequiredArgsConstructor
 @Slf4j

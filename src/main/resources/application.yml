@@ -1,0 +1,49 @@
+logging:
+  level:
+    org:
+      springframework:
+        orm:
+          jpa: INFO
+          JpaTransactionManager: debug
+        transaction: info
+    spring security: trace
+    web: trace
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: always
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+
+admin:
+  login: ${ADMIN_LOGIN}
+  password: ${ADMIN_PASSWORD}
+
+token:
+  secret: ${TOKEN_SECRET}
+  duration: ${TOKEN_DURATION}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: ci,test
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tsm
+    password: tsm
+    username: tsm
+admin:
+  login: admin
+  password: admin
+token:
+  secret: 51Ph61VOzrdwNvRa9FZclUpZRU160G1O
+  duration: 10m

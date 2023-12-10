@@ -33,7 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         try {
@@ -45,18 +46,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
+
             jwt = authHeader.substring(7);
             userName = jwtService.extractUserName(jwt);
-
-
             if (!userName.isEmpty()
                     && SecurityContextHolder.getContext().getAuthentication() == null) {
+
                 UserDetails userDetails = userService.findUserByName(userName);
+
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    SecurityContext context = SecurityContextHolder.createEmptyContext();
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContext context = SecurityContextHolder.createEmptyContext();
                     context.setAuthentication(authToken);
                     SecurityContextHolder.setContext(context);
                 }
@@ -67,6 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write(mapper.writeValueAsString(
                     new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage())));
+
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         }
     }

@@ -48,7 +48,6 @@ public class UserServiceTest {
         registry.add("spring.datasource.password", database::getPassword);
     }
 
-
     private UserDtoRequestUser userDtoRequestUser;
 
     private UserDtoFullResponse expectedUser;

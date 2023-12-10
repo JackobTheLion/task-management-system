@@ -33,15 +33,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @Testcontainers
 class TaskServiceTest {
-
     private final TaskService taskService;
-
     private final TaskRepository taskRepository;
-
     private final UserRepository userRepository;
-
     private final CommentRepository commentRepository;
-
 
     @Container
     private static final PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:14.3-alpine")
