@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS public.tasks
     name        varchar(256)                                   NOT NULL,
     description varchar(3000)                                  NOT NULL,
     status      varchar(20)                                    NOT NULL,
-    priority    int                                            NOT NULL,
+    priority    smallint                                       NOT NULL,
     author_id   BIGINT                                         NOT NULL,
     executor_id BIGINT,
     deleted     BOOLEAN,
