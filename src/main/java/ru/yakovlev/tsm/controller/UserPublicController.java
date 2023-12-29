@@ -38,7 +38,7 @@ public class UserPublicController {
     }
 
     @Operation(summary = "User receiving JWT token")
-    @GetMapping("/auth")
+    @PostMapping("/auth")
     @ResponseStatus(HttpStatus.OK)
     public JwtResponse getToken(@RequestBody @Validated JwtRequest jwtRequest) {
         return authenticationServiceImpl.getToken(jwtRequest);
